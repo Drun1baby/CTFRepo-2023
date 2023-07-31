@@ -1,0 +1,7 @@
+version: '3.3'
+services:
+  service:
+    build: ./
+    image: ctf/exiftool
+    ports:
+        - 8081:8080

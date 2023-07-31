@@ -1,0 +1,2 @@
+﻿StructuredLogViewerResource. c1ass$getRecords
+->_“\comMxcvicse\loongventerprise\server\1L1ogging\logviewerv\backend\LogFilter.cl1ass$getLogRecordsUsingQuery -> iasLogFileName

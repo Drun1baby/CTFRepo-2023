@@ -1,0 +1,6 @@
+version: "2"
+services:
+  ez_py:
+    build: .
+    ports:
+      - "12003:80"
